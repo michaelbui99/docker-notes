@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Docker workflow demo</title>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Hello world</h1>
+            <p id="name"></p>
+            <p id="email"></p>
+        </div>
+
+        <div class="container-edit">
+            <h1>Hello world</h1>
+            <p id="name2">Name: <input type="text" id="name-input" /></p>
+            <p id="email2">Email: <input type="text" id="email-input" /></p>
+        </div>
+        <button id="edit-btn">Edit</button>
+        <button id="update-btn">Update</button>
+    </body>
+    <script>
+        const nameDisplay = document.querySelector("#name");
+        const emailDisplay = document.querySelector("#email");
+
+        /**
+         * @type {HTMLInputElement}
+         */
+        const nameInput = document.querySelector("#name-input");
+
+        /**
+         * @type {HTMLInputElement}
+         */
+        const emailInput = document.querySelector("#email-input");
+        const editContainer = document.querySelector(".container-edit");
+        const container = document.querySelector(".container");
+        const editBtn = document.querySelector("#edit-btn");
+        const updateBtn = document.querySelector("#update-btn");
+        const API = "http://localhost:8080/api/user";
+
+        let user = null;
+
+        const updateUserInfo = async () => {
+            console.log("clicked");
+            const response = await fetch(API, {
+                method: "PUT",
+                body: JSON.stringify({
+                    name: nameInput.value,
+                    email: emailInput.value,
+                }),
+                headers: {
+                    "content-type": "application/json",
+                },
+            });
+
+            const updatedData = await response.json();
+            console.log(updatedData);
+
+            user = updatedData;
+            nameDisplay.innerText = `Name: ${user.name}`;
+            emailDisplay.innerText = `Email: ${user.email}`;
+            toggleEditing();
+        };
+
+        const fetchUser = async () => {
+            const response = await fetch(API);
+            console.log(response);
+            user = await response.json();
+            nameDisplay.innerText = `Name: ${user.name}`;
+            emailDisplay.innerText = `Email: ${user.email}`;
+        };
+        fetchUser();
+
+        let editing = false;
+
+        const toggleEditing = () => {
+            editing = !editing;
+            if (!editing) {
+                editContainer.style.display = "none";
+                container.style.display = "block";
+                nameDisplay.innerText = `Name: ${user.name}`;
+                emailDisplay.innerText = `Email: ${user.email}`;
+            } else {
+                editContainer.style.display = "block";
+                container.style.display = "none";
+                nameInput.placeholder = user.name;
+                emailInput.placeholder = user.email;
+            }
+        };
+
+        editBtn.addEventListener("click", toggleEditing);
+        updateBtn.addEventListener("click", updateUserInfo);
+
+        console.log("Hello world");
+
+        if (!editing) {
+            editContainer.style.display = "none";
+            container.style.display = "block";
+        } else {
+            editContainer.style.display = "block";
+            container.style.display = "none";
+        }
+    </script>
+</html>
